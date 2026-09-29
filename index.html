@@ -1,0 +1,747 @@
+<title>МРП скважин с УЭЦН</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: учебный лонгрид в фирменных цветах КМГ (голубой, тёмно-синий, графит), от оборудования к расчёту и живому калькулятору 5 скважин */
+:root{
+  --bg:#f3f7fa; --surface:#ffffff; --surface-2:#e8f1f7; --ink:#231f20; --muted:#55626d; --line:#d2e0ea;
+  --brand:#00adef; --brand-light:#8ed8f8; --navy:#0b2f55; --on-navy:#ffffff;
+  --accent:#0072a8; --accent-soft:#dcf2fc; --oil:#0b2f55; --oil-soft:#d7eaf6;
+  --warm:#d9780a; --warm-soft:#fbe9d2;
+  --run:#00adef; --fail:#d6452b; --fail-soft:#f8ddd6; --idle:#bcc8d1;
+  --earth:#e7e3d9; --earth-2:#dbd4c3; --liquid:#e9ca8a; --liquid-2:#d4a44c;
+  --f-display:"Montserrat","Arial",system-ui,sans-serif;
+  --f-body:"Roboto","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"Roboto Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0a1622; --surface:#10212f; --surface-2:#16293a; --ink:#e6eef4; --muted:#93a8b8; --line:#23394b;
+  --brand:#1cb8f2; --brand-light:#8ed8f8; --navy:#07192b; --on-navy:#ffffff;
+  --accent:#5cc8f5; --accent-soft:#0f3148; --oil:#8ed8f8; --oil-soft:#12344b;
+  --warm:#f2a23c; --warm-soft:#3d2a12;
+  --run:#1cb8f2; --fail:#f06b50; --fail-soft:#46211a; --idle:#34495a;
+  --earth:#16222b; --earth-2:#1f2c35; --liquid:#6b5424; --liquid-2:#8e6d2c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a1622; --surface:#10212f; --surface-2:#16293a; --ink:#e6eef4; --muted:#93a8b8; --line:#23394b;
+  --brand:#1cb8f2; --brand-light:#8ed8f8; --navy:#07192b; --on-navy:#ffffff;
+  --accent:#5cc8f5; --accent-soft:#0f3148; --oil:#8ed8f8; --oil-soft:#12344b;
+  --warm:#f2a23c; --warm-soft:#3d2a12;
+  --run:#1cb8f2; --fail:#f06b50; --fail-soft:#46211a; --idle:#34495a;
+  --earth:#16222b; --earth-2:#1f2c35; --liquid:#6b5424; --liquid-2:#8e6d2c; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:1100px;margin:0 auto}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,4.6vw,48px);line-height:1.12;letter-spacing:-.01em}
+h2{font-family:var(--f-display);font-weight:700;font-size:clamp(22px,3vw,30px);line-height:1.2}
+h3{font-size:18px;font-weight:600;line-height:1.35}
+p{margin:0}
+.prose{max-width:68ch;display:grid;gap:14px}
+.muted{color:var(--muted)}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+section{padding-block:56px 8px;display:grid;gap:24px}
+.sec-head{display:grid;gap:8px}
+.sec-head .step{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+
+/* top bar */
+.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--navy);color:var(--on-navy);border-radius:0 0 var(--r) var(--r);border-bottom:4px solid var(--brand)}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--f-display)}
+.brand .mark{width:38px;height:38px;border-radius:8px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px;letter-spacing:.02em}
+.brand .bt{display:grid;line-height:1.2}
+.brand .bt b{font-weight:700;font-size:16px}
+.brand .bt span{font-family:var(--f-body);font-size:12px;opacity:.75}
+.nav{display:flex;flex-wrap:wrap;gap:6px}
+.nav a{font-size:14px;font-weight:500;text-decoration:none;color:var(--on-navy);padding:6px 12px;border-radius:6px;background:rgba(255,255,255,.08)}
+.nav a:hover{background:var(--brand);color:#fff}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:40px;align-items:center;padding-block:48px 16px}
+.hero .lead{font-size:19px;color:var(--muted);max-width:52ch}
+.hero-text{display:grid;gap:20px;min-width:0}
+.formula-card{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--brand);border-radius:var(--r);padding:24px;display:grid;gap:14px;min-width:0}
+.frac{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:18px}
+.frac .big{font-family:var(--f-display);font-weight:800;font-size:34px;color:var(--oil)}
+.frac .fr{display:inline-grid;text-align:center;gap:4px}
+.frac .fr span:first-child{border-bottom:2px solid var(--ink);padding:0 6px 4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;padding:4px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.chip b{color:var(--ink);font-weight:600}
+
+/* ESP scheme */
+.esp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+.figure{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;overflow-x:auto}
+.figure svg{display:block;width:100%;min-width:520px;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+svg .t-sub{fill:var(--muted);font-size:11px}
+svg .t-lbl{font-size:13px;font-weight:600}
+svg .t-mono{font-family:var(--f-mono);font-size:11px}
+.earth{fill:var(--earth)} .plast{fill:var(--earth-2)}
+.eq{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.eq2{fill:var(--surface-2);stroke:var(--ink);stroke-width:1.5}
+.screen{fill:var(--accent-soft);stroke:var(--accent)}
+.pump{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}
+.motor{fill:var(--oil-soft);stroke:var(--oil);stroke-width:1.8}
+.liquid{fill:var(--liquid)} .well-bg{fill:var(--bg)}
+.wall{stroke:var(--ink);stroke-width:3;fill:none}
+.thin{stroke:var(--ink);stroke-width:1;fill:none}
+.lead-line{stroke:var(--muted);stroke-width:1;fill:none}
+.cable{stroke:var(--accent);stroke-width:3;fill:none;stroke-linecap:round}
+.flow{stroke:var(--ink);stroke-width:2;fill:none}
+.inflow{stroke:var(--oil);stroke-width:2;fill:none}
+.dash{stroke:var(--oil);stroke-width:1.5;stroke-dasharray:5 4;fill:none}
+
+.parts{display:grid;gap:12px;min-width:0}
+.part{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.part .tag{font-family:var(--f-mono);font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent);min-width:48px;text-align:center}
+.part p{font-size:15px}
+.note{background:var(--oil-soft);border-radius:var(--r);padding:16px 18px;font-size:15px;display:grid;gap:6px}
+.note b{color:var(--ink)}
+
+/* methods */
+.terms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.term{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:6px;align-content:start}
+.term dt{font-weight:600}
+.term dd{margin:0;font-size:14px;color:var(--muted)}
+.methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.method{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:14px;align-content:start}
+.method .label{display:flex;gap:10px;align-items:center}
+.method .letter{font-family:var(--f-display);font-weight:700;font-size:14px;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--surface)}
+.m-a .letter{background:var(--oil)} .m-b .letter{background:var(--warm)}
+.eq-box{font-family:var(--f-mono);font-size:15px;background:var(--surface-2);border-radius:8px;padding:12px 14px;line-height:1.5;overflow-x:auto}
+.method ul{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15px}
+.compare{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--on-navy);font-weight:600;background:var(--navy)}
+tr:last-child td{border-bottom:0}
+
+/* purpose */
+.purpose{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.pp{padding:18px 0;border-top:3px solid var(--brand);display:grid;gap:8px;align-content:start}
+.pp h3{font-size:17px}
+.pp p{font-size:15px;color:var(--muted)}
+.fleet-eq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.fleet-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.fleet-row:last-child{border-bottom:0}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:14px;min-width:0}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-size:14px;padding:7px 14px;border-radius:6px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--on-navy)}
+.well{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:10px 16px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.well .wname{font-family:var(--f-mono);font-weight:600;display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.well .field{display:grid;gap:4px;min-width:0}
+.well .flabel{font-size:12px;color:var(--muted)}
+.range-row{display:flex;gap:10px;align-items:center}
+input[type=range]{flex:1;min-width:0;accent-color:var(--run)}
+.days{width:72px;font:inherit;font-family:var(--f-mono);font-size:15px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:right}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.stepper button{font:inherit;font-size:18px;width:34px;height:36px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.stepper button:hover{background:var(--fail-soft);color:var(--fail)}
+.stepper output{font-family:var(--f-mono);font-weight:600;min-width:28px;text-align:center;color:var(--fail)}
+.res{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.kpi{display:grid;gap:4px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.kpi .v{font-family:var(--f-display);font-weight:800;font-size:clamp(40px,6vw,56px);line-height:1;color:var(--oil)}
+.kpi .v small{font-size:18px;font-family:var(--f-body);color:var(--muted);font-weight:500}
+.kpi2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kpi2 div{display:grid;gap:2px}
+.kpi2 .v2{font-family:var(--f-mono);font-size:22px;font-weight:600}
+.kpi2 .v2.b{color:var(--warm)}
+.lbl{font-size:13px;color:var(--muted)}
+.plain{font-size:15px;background:var(--surface-2);border-radius:10px;padding:12px 14px}
+.work{font-family:var(--f-mono);font-size:13px;line-height:1.55;display:grid;gap:8px}
+.work .blk{display:grid;gap:2px}
+.work .row{overflow-wrap:anywhere}
+.work .h{font-family:var(--f-body);font-size:12px;color:var(--muted)}
+.val-in{fill:#fff}
+.insight{background:var(--fail-soft);border-radius:10px;padding:12px 14px;font-size:15px}
+
+.chart-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:12px;min-width:0}
+.chart-scroll{overflow-x:auto}
+.chart-scroll svg{display:block;width:100%;min-width:600px;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:10px;border-radius:3px;display:inline-block}
+.ax{stroke:var(--line);stroke-width:1}
+.ax-t{fill:var(--muted);font-size:12px;font-family:var(--f-mono)}
+.seg-run{fill:var(--run)} .seg-rep{fill:var(--fail);opacity:.45} .seg-idle{fill:var(--idle)}
+.fail-mark{fill:var(--fail)}
+.bar{fill:var(--run)}
+.val-t{font-family:var(--f-mono);font-size:13px;font-weight:600}
+.line-mrp{stroke:var(--oil);stroke-width:2.5;stroke-dasharray:8 5}
+.line-sno{stroke:var(--warm);stroke-width:2;stroke-dasharray:2 4}
+.lab-mrp{fill:var(--oil);font-weight:600;font-size:13px;font-family:var(--f-mono)}
+.lab-sno{fill:var(--warm);font-weight:600;font-size:13px;font-family:var(--f-mono)}
+td.num,th.num{text-align:right}
+tfoot td{font-weight:600;background:var(--surface-2)}
+.yes{color:var(--accent)} .no{color:var(--muted)}
+
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px}
+.gloss div{padding:12px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:110px 1fr;gap:12px;font-size:15px}
+.gloss b{font-family:var(--f-mono)}
+footer{margin-top:48px;padding:20px;border-radius:var(--r);background:var(--navy);color:var(--on-navy);font-size:13px;display:grid;gap:6px}
+footer b{font-family:var(--f-display)}
+
+@media (max-width:900px){
+  .hero,.esp-grid,.calc,.fleet-eq{grid-template-columns:1fr}
+  .terms{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .purpose{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .res{position:static}
+}
+@media (max-width:600px){
+  .methods,.purpose,.terms,.gloss{grid-template-columns:1fr}
+  .well{grid-template-columns:1fr auto}
+  .well .field{grid-column:1 / -1;grid-row:2}
+  .gloss div{grid-template-columns:90px 1fr}
+}
+@media (prefers-reduced-motion:no-preference){
+  .bar,.kpi .v{transition:all .25s ease}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="mark" aria-hidden="true">КМГ</span><span class="bt"><b>КМГ Инжиниринг</b><span>Учебный модуль · МРП скважин с УЭЦН</span></span></div>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#esp">Что такое УЭЦН</a>
+      <a href="#calc-method">Как считается</a>
+      <a href="#purpose">Зачем нужен</a>
+      <a href="#demo">Калькулятор</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <div class="hero-text">
+      <div class="eyebrow">Учебник для тех, кто не из нефтянки</div>
+      <h1>Межремонтный период: сколько скважина работает от ремонта до ремонта</h1>
+      <p class="lead">МРП — главный показатель надёжности механизированного фонда. За 10 минут разберёмся, что он означает, как его считают и почему за ним так следят. В конце можно самому поменять данные пяти скважин и увидеть, как меняется итог.</p>
+    </div>
+    <aside class="formula-card" aria-label="Формула МРП">
+      <div class="eyebrow">Суть в одной формуле</div>
+      <div class="frac">
+        <span class="big">МРП</span><span>=</span>
+        <span class="fr"><span>отработанные сутки</span><span>число отказов</span></span>
+      </div>
+      <p class="muted" style="font-size:15px">Считается за последние 365 суток по группе скважин: цеху, месторождению или всему фонду.</p>
+      <div class="chips">
+        <span class="chip">единица: <b>сутки</b></span>
+        <span class="chip">период: <b>скользящий год</b></span>
+        <span class="chip">больше — <b>лучше</b></span>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 1. ESP -->
+  <section id="esp">
+    <div class="sec-head">
+      <span class="step">Шаг 1 из 4</span>
+      <h2>Что стоит в скважине: установка ЭЦН</h2>
+    </div>
+    <div class="esp-grid">
+      <div class="prose">
+        <p>Когда пластового давления не хватает, чтобы нефть сама поднималась на поверхность, в скважину опускают насос. Самый распространённый вариант — <b>УЭЦН</b>, установка электроприводного центробежного насоса.</p>
+        <p>Представьте длинный узкий электронасос, собранный из нескольких секций. Его на трубах опускают на глубину, часто на один-два километра и больше, прямо под уровень жидкости. Сверху по кабелю подаётся электричество, двигатель крутит вал, а ступени насоса выталкивают жидкость вверх по трубам.</p>
+        <div class="parts">
+          <div class="part"><span class="tag">ЭЦН</span><p>Сам насос: много ступеней «колесо + направляющий аппарат», каждая добавляет немного давления.</p></div>
+          <div class="part"><span class="tag">ПЭД</span><p>Погружной электродвигатель. Работает внизу, в жидкости, которая его и охлаждает.</p></div>
+          <div class="part"><span class="tag">ГЗ</span><p>Гидрозащита: не даёт скважинной жидкости попасть в масло двигателя.</p></div>
+          <div class="part"><span class="tag">НКТ</span><p>Насосно-компрессорные трубы: на них висит установка, по ним нефть идёт наверх.</p></div>
+          <div class="part"><span class="tag">СУ</span><p>Станция управления на поверхности: включает, защищает и контролирует насос.</p></div>
+        </div>
+        <div class="note">
+          <b>Главное для МРП</b>
+          <span>Всё это оборудование работает в жёстких условиях: песок, газ, соли, высокая температура. Рано или поздно оно ломается. Чтобы починить, нужно вызвать бригаду и поднять на поверхность всю колонну труб вместе с насосом. Это и есть <b>ремонт скважины</b>, а поломка, которая к нему привела, называется <b>отказом</b>.</span>
+        </div>
+      </div>
+
+      <figure class="figure" style="margin:0" aria-label="Схема скважины с УЭЦН">
+        <svg viewBox="0 0 640 690" role="img" aria-labelledby="espTitle">
+          <title id="espTitle">Упрощённая схема скважины, оборудованной УЭЦН</title>
+          <defs>
+            <pattern id="plastPat" width="10" height="10" patternUnits="userSpaceOnUse">
+              <rect width="10" height="10" class="plast"/>
+              <circle cx="3" cy="3" r="1.3" style="fill:var(--liquid-2)"/>
+              <circle cx="8" cy="7" r="1" style="fill:var(--liquid-2)"/>
+            </pattern>
+            <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" style="fill:var(--ink)"/>
+            </marker>
+            <marker id="arrOil" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" style="fill:var(--oil)"/>
+            </marker>
+          </defs>
+          <!-- ground -->
+          <rect x="0" y="110" width="640" height="580" class="earth"/>
+          <rect x="0" y="612" width="640" height="52" fill="url(#plastPat)"/>
+          <line x1="0" y1="110" x2="640" y2="110" class="thin"/>
+          <!-- surface equipment -->
+          <text x="60" y="54" text-anchor="middle" class="t-sub">Трансформатор</text>
+          <rect x="30" y="62" width="60" height="48" rx="4" class="eq"/>
+          <text x="60" y="91" text-anchor="middle" class="t-mono">ТМПН</text>
+          <text x="145" y="38" text-anchor="middle" class="t-lbl">Станция управления</text>
+          <rect x="110" y="48" width="70" height="62" rx="4" class="eq"/>
+          <rect x="120" y="58" width="50" height="16" rx="2" class="screen"/>
+          <text x="145" y="100" text-anchor="middle" class="t-mono">СУ</text>
+          <path d="M90 86 H110" class="cable"/>
+          <path d="M180 86 H286" class="cable"/>
+          <text x="310" y="54" text-anchor="middle" class="t-lbl">Устьевая арматура</text>
+          <rect x="286" y="68" width="48" height="42" rx="3" class="eq"/>
+          <circle cx="310" cy="80" r="6" class="eq2"/>
+          <path d="M334 90 H468" class="flow" marker-end="url(#arr)"/>
+          <text x="400" y="82" text-anchor="middle" class="t-sub">нефть — в систему сбора</text>
+          <!-- casing -->
+          <rect x="270" y="110" width="80" height="540" class="well-bg"/>
+          <rect x="273" y="250" width="74" height="399" class="liquid"/>
+          <line x1="270" y1="110" x2="270" y2="650" class="wall"/>
+          <line x1="350" y1="110" x2="350" y2="650" class="wall"/>
+          <line x1="270" y1="650" x2="350" y2="650" class="wall"/>
+          <!-- tubing -->
+          <rect x="298" y="110" width="24" height="222" class="eq"/>
+          <rect x="301" y="112" width="18" height="218" class="liquid"/>
+          <path d="M304 306 L310 298 L316 306 M304 236 L310 228 L316 236 M304 166 L310 158 L316 166" class="flow"/>
+          <!-- cable down -->
+          <path d="M300 90 Q326 100 327 116 V326 L335 334 V514" class="cable"/>
+          <!-- pump string -->
+          <rect x="292" y="332" width="36" height="118" rx="3" class="pump"/>
+          <g class="thin" style="stroke:var(--accent)">
+            <line x1="292" y1="344" x2="328" y2="344"/><line x1="292" y1="356" x2="328" y2="356"/><line x1="292" y1="368" x2="328" y2="368"/>
+            <line x1="292" y1="380" x2="328" y2="380"/><line x1="292" y1="392" x2="328" y2="392"/><line x1="292" y1="404" x2="328" y2="404"/>
+            <line x1="292" y1="416" x2="328" y2="416"/><line x1="292" y1="428" x2="328" y2="428"/><line x1="292" y1="440" x2="328" y2="440"/>
+          </g>
+          <rect x="292" y="450" width="36" height="30" class="eq"/>
+          <circle cx="300" cy="465" r="2.6" class="well-bg"/><circle cx="310" cy="465" r="2.6" class="well-bg"/><circle cx="320" cy="465" r="2.6" class="well-bg"/>
+          <rect x="292" y="480" width="36" height="34" class="eq2"/>
+          <rect x="292" y="514" width="36" height="84" rx="3" class="motor"/>
+          <g class="thin" style="stroke:var(--oil)">
+            <line x1="292" y1="530" x2="328" y2="540"/><line x1="292" y1="546" x2="328" y2="556"/><line x1="292" y1="562" x2="328" y2="572"/><line x1="292" y1="578" x2="328" y2="588"/>
+          </g>
+          <rect x="297" y="598" width="26" height="15" rx="3" class="eq"/>
+          <!-- dynamic level -->
+          <line x1="273" y1="250" x2="347" y2="250" class="dash"/>
+          <line x1="200" y1="250" x2="270" y2="250" class="lead-line"/>
+          <text x="194" y="246" text-anchor="end" class="t-lbl">Динамический</text>
+          <text x="194" y="262" text-anchor="end" class="t-lbl">уровень</text>
+          <text x="194" y="277" text-anchor="end" class="t-sub">жидкости при работе</text>
+          <!-- casing label -->
+          <line x1="200" y1="170" x2="270" y2="170" class="lead-line"/>
+          <text x="194" y="166" text-anchor="end" class="t-lbl">Обсадная</text>
+          <text x="194" y="182" text-anchor="end" class="t-lbl">колонна</text>
+          <!-- perforation & inflow -->
+          <g class="thin" style="stroke-width:2">
+            <line x1="260" y1="620" x2="280" y2="620"/><line x1="260" y1="631" x2="280" y2="631"/><line x1="260" y1="642" x2="280" y2="642"/>
+            <line x1="340" y1="620" x2="360" y2="620"/><line x1="340" y1="631" x2="360" y2="631"/><line x1="340" y1="642" x2="360" y2="642"/>
+          </g>
+          <path d="M214 631 H256" class="inflow" marker-end="url(#arrOil)"/>
+          <path d="M406 631 H364" class="inflow" marker-end="url(#arrOil)"/>
+          <text x="206" y="627" text-anchor="end" class="t-lbl">Пласт</text>
+          <text x="206" y="643" text-anchor="end" class="t-sub">приток нефти</text>
+          <!-- right labels -->
+          <path d="M322 200 H382" class="lead-line"/>
+          <text x="388" y="196" class="t-lbl">НКТ</text>
+          <text x="388" y="212" class="t-sub">по трубам нефть идёт вверх</text>
+          <path d="M328 290 H382" class="lead-line"/>
+          <text x="388" y="294" class="t-lbl">Кабель питания</text>
+          <path d="M328 380 H382" class="lead-line"/>
+          <text x="388" y="376" class="t-lbl">ЭЦН — насос</text>
+          <text x="388" y="392" class="t-sub">десятки и сотни ступеней</text>
+          <path d="M328 465 H382" class="lead-line"/>
+          <text x="388" y="461" class="t-lbl">Входной модуль</text>
+          <text x="388" y="476" class="t-sub">или газосепаратор</text>
+          <path d="M328 497 H382" class="lead-line"/>
+          <text x="388" y="502" class="t-lbl">Гидрозащита</text>
+          <path d="M328 556 H382" class="lead-line"/>
+          <text x="388" y="552" class="t-lbl">ПЭД</text>
+          <text x="388" y="568" class="t-sub">погружной электродвигатель</text>
+          <path d="M323 605 H382" class="lead-line"/>
+          <text x="388" y="600" class="t-lbl">ТМС</text>
+          <text x="388" y="615" class="t-sub">датчики давления и температуры</text>
+          <text x="620" y="682" text-anchor="end" class="t-sub">схема не в масштабе</text>
+        </svg>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 2. How computed -->
+  <section id="calc-method">
+    <div class="sec-head">
+      <span class="step">Шаг 2 из 4</span>
+      <h2>Как считается МРП</h2>
+    </div>
+    <div class="prose">
+      <p>Идея простая: берём всё время, которое скважины группы реально проработали, и делим на количество поломок за это же время. Получаем, сколько суток <b>в среднем</b> проходит от одного ремонта до следующего.</p>
+    </div>
+
+    <dl class="terms" style="margin:0">
+      <div class="term"><dt>Отказ</dt><dd>Поломка установки, после которой скважину нужно останавливать и ремонтировать с подъёмом оборудования.</dd></div>
+      <div class="term"><dt>Наработка</dt><dd>Сколько суток установка реально работала. Время простоя и ремонта сюда не входит.</dd></div>
+      <div class="term"><dt>Скользящий год</dt><dd>Последние 365 суток от даты расчёта. Каждый месяц окно сдвигается на месяц вперёд.</dd></div>
+      <div class="term"><dt>ПРС</dt><dd>Подземный ремонт скважины: бригада поднимает трубы и насос, меняет оборудование и спускает обратно.</dd></div>
+    </dl>
+
+    <div class="methods">
+      <article class="method m-a">
+        <div class="label"><span class="letter">А</span><h3>МРП по скользящему году</h3></div>
+        <div class="eq-box">МРП = ΣТ<sub>отр</sub> / N<sub>отк</sub></div>
+        <ul>
+          <li><b>ΣТ<sub>отр</sub></b> — суммарное отработанное время <b>всех</b> скважин группы за последние 365 суток.</li>
+          <li><b>N<sub>отк</sub></b> — число отказов (ремонтов) за тот же период.</li>
+          <li>Скважины, которые год отработали без поломок, тоже входят в расчёт: они добавляют сутки, но не добавляют отказов, и МРП растёт.</li>
+        </ul>
+        <p class="muted" style="font-size:14px">На некоторых предприятиях используют упрощённый вариант: число скважин × 365 / число отказов. Он совпадает с формулой А, если простоями пренебречь.</p>
+      </article>
+      <article class="method m-b">
+        <div class="label"><span class="letter">Б</span><h3>Средняя наработка на отказ (СНО)</h3></div>
+        <div class="eq-box">СНО = ΣТ<sub>отказавших</sub> / N<sub>отк</sub></div>
+        <ul>
+          <li>Учитываются <b>только</b> установки, которые отказали. Скважины без отказов в расчёт не берутся.</li>
+          <li>Показывает, сколько «живёт» оборудование, которое всё-таки ломается.</li>
+          <li>Обычно получается меньше МРП и честнее говорит о слабых местах фонда.</li>
+        </ul>
+        <p class="muted" style="font-size:14px">В реальной практике СНО считают по каждой отказавшей установке от запуска до отказа. В калькуляторе ниже для наглядности берём наработку за тот же год.</p>
+      </article>
+    </div>
+
+    <div class="compare">
+      <table>
+        <thead><tr><th></th><th>А. МРП</th><th>Б. СНО</th></tr></thead>
+        <tbody>
+          <tr><td>Какие скважины учитываются</td><td>Все в группе</td><td>Только отказавшие</td></tr>
+          <tr><td>На какой вопрос отвечает</td><td>Как часто в среднем ремонтируется фонд</td><td>Сколько работает оборудование до поломки</td></tr>
+          <tr><td>Если все скважины без отказов</td><td>Деление на ноль: МРП больше 365 суток</td><td>Не считается: отказов нет</td></tr>
+          <tr><td>Для чего удобнее</td><td>Планирование ремонтов, отчётность, KPI</td><td>Анализ причин отказов, оценка поставщиков</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3. Purpose -->
+  <section id="purpose">
+    <div class="sec-head">
+      <span class="step">Шаг 3 из 4</span>
+      <h2>Зачем нужен МРП</h2>
+    </div>
+    <div class="prose"><p>Каждый ремонт — это остановленная добыча, работа бригады, новое или отремонтированное оборудование. МРП переводит всё это в одно понятное число, по которому можно управлять.</p></div>
+    <div class="purpose">
+      <div class="pp"><h3>Оценить надёжность</h3><p>Насколько хорошо подобрано оборудование и насколько грамотно его эксплуатируют. Рост МРП означает, что поломок стало меньше.</p></div>
+      <div class="pp"><h3>Спланировать ремонты</h3><p>Зная МРП и число скважин, можно заранее посчитать, сколько ремонтов будет за год, сколько нужно бригад и насосов на складе.</p></div>
+      <div class="pp"><h3>Посчитать деньги</h3><p>Меньше отказов — меньше затрат на ремонты и меньше потерянной нефти за время простоя скважин.</p></div>
+      <div class="pp"><h3>Сравнить</h3><p>Цеха, месторождения, производителей насосов и сервисные компании между собой по одинаковой мерке.</p></div>
+      <div class="pp"><h3>Найти проблемные скважины</h3><p>Несколько часто отказывающих скважин сильно тянут общий МРП вниз. Их выделяют в отдельный список и разбираются с причинами.</p></div>
+      <div class="pp"><h3>Ставить цели</h3><p>МРП — один из ключевых показателей эффективности добывающих подразделений и подрядчиков по обслуживанию УЭЦН.</p></div>
+    </div>
+
+    <div class="fleet-eq">
+      <div class="prose" style="gap:10px">
+        <h3>Пример: МРП и количество ремонтов</h3>
+        <p class="muted" style="font-size:15px">Формула обратная: ремонтов в год ≈ число скважин × 365 / МРП. Для условного фонда из 1000 скважин:</p>
+      </div>
+      <div>
+        <div class="fleet-row"><span>МРП 300 суток</span><span class="num">≈ 1 217 ремонтов в год</span></div>
+        <div class="fleet-row"><span>МРП 400 суток</span><span class="num">≈ 913 ремонтов в год</span></div>
+        <div class="fleet-row"><span>МРП 500 суток</span><span class="num">≈ 730 ремонтов в год</span></div>
+        <div class="fleet-row"><b>+100 суток МРП (с 400 до 500)</b><b class="num">≈ 183 ремонта меньше</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Demo -->
+  <section id="demo">
+    <div class="sec-head">
+      <span class="step">Шаг 4 из 4</span>
+      <h2>Калькулятор: 5 скважин, один скользящий год</h2>
+      <p class="muted" style="max-width:68ch">Меняйте для каждой скважины число отработанных суток (0–365) и количество отказов за год. МРП, СНО, графики и пошаговый расчёт пересчитываются сразу. Начальные данные — учебный пример.</p>
+    </div>
+
+    <div class="calc">
+      <div class="panel">
+        <div class="presets" role="group" aria-label="Готовые сценарии">
+          <button class="btn" data-preset="base" aria-pressed="true">Учебный пример</button>
+          <button class="btn" data-preset="one">Одна проблемная скважина</button>
+          <button class="btn" data-preset="stable">Стабильный фонд</button>
+          <button class="btn" data-preset="hard">Осложнённый фонд</button>
+        </div>
+        <div id="wells"></div>
+      </div>
+
+      <div class="panel res" aria-live="polite">
+        <div class="kpi">
+          <span class="lbl">А. МРП группы из 5 скважин</span>
+          <span class="v" id="mrpV">—</span>
+        </div>
+        <div class="kpi2">
+          <div><span class="lbl">Б. СНО</span><span class="v2 b" id="snoV">—</span></div>
+          <div><span class="lbl">Отказов / отработано</span><span class="v2" id="totV">—</span></div>
+        </div>
+        <p class="plain" id="plainV"></p>
+        <div class="work" id="workV"></div>
+        <p class="insight" id="insightV"></p>
+        <p class="lbl" id="fleetV"></p>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Шкала работы скважин за скользящий год</h3>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--run)"></i>работа</span>
+        <span><i class="sw" style="background:var(--fail);opacity:.45"></i>ремонт после отказа</span>
+        <span><i class="sw" style="background:var(--idle)"></i>простой без отказа</span>
+        <span><i class="sw" style="background:var(--fail);height:14px;width:4px"></i>отказ</span>
+      </div>
+      <div class="chart-scroll"><svg id="timeline" viewBox="0 0 1000 220" role="img" aria-label="Временная шкала работы и ремонтов пяти скважин"></svg></div>
+      <p class="lbl">Отказы и ремонты расставлены равномерно для наглядности: для расчёта МРП важны только суммы, а не даты.</p>
+    </div>
+
+    <div class="chart-card">
+      <h3>Наработка на отказ по каждой скважине</h3>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--run)"></i>сутки работы на один отказ</span>
+        <span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--run) 0 3px,transparent 3px 6px);border:1px solid var(--run)"></i>без отказов (вся наработка)</span>
+        <span><i class="sw" style="background:var(--oil);height:3px"></i>МРП группы</span>
+        <span><i class="sw" style="background:var(--warm);height:3px"></i>СНО</span>
+      </div>
+      <div class="chart-scroll"><svg id="bars" viewBox="0 0 1000 330" role="img" aria-label="Столбчатая диаграмма наработки на отказ"></svg></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Расчёт по шагам</h3>
+      <div class="compare">
+        <table>
+          <thead><tr><th>Скважина</th><th class="num">Отработано, сут</th><th class="num">Отказов</th><th class="num">Сутки на 1 отказ</th><th>Входит в МРП</th><th>Входит в СНО</th></tr></thead>
+          <tbody id="stepBody"></tbody>
+          <tfoot id="stepFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="gloss">
+    <div class="sec-head"><h2>Словарик</h2></div>
+    <div class="gloss">
+      <div><b>МРП</b><span>Межремонтный период, сутки между ремонтами в среднем по группе скважин.</span></div>
+      <div><b>СНО</b><span>Средняя наработка на отказ по отказавшему оборудованию.</span></div>
+      <div><b>УЭЦН</b><span>Установка электроприводного центробежного насоса.</span></div>
+      <div><b>ПЭД</b><span>Погружной электродвигатель.</span></div>
+      <div><b>НКТ</b><span>Насосно-компрессорные трубы.</span></div>
+      <div><b>ПРС</b><span>Подземный (текущий) ремонт скважины.</span></div>
+      <div><b>ЧОФ</b><span>Часто отказывающий фонд: скважины с повторными отказами за год.</span></div>
+      <div><b>Мехфонд</b><span>Механизированный фонд: скважины, где нефть поднимают насосами.</span></div>
+    </div>
+  </section>
+
+  <footer><b>ТОО «КМГ Инжиниринг»</b><span>Учебный материал. Цифры в калькуляторе условные и служат только для объяснения методики. Конкретный порядок расчёта МРП закреплён во внутренних регламентах каждой компании.</span></footer>
+</div>
+
+<script>
+(function(){
+  var PERIOD = 365;
+  var NAMES = ["Скв. 101","Скв. 205","Скв. 312","Скв. 418","Скв. 527"];
+  var PRESETS = {
+    base:   [[365,0],[350,1],[340,2],[360,1],[320,3]],
+    one:    [[365,0],[365,0],[365,0],[365,0],[300,5]],
+    stable: [[365,0],[365,0],[358,1],[365,0],[362,1]],
+    hard:   [[300,3],[280,4],[330,2],[310,3],[345,1]]
+  };
+  var wells = [];
+  function load(key){ wells = PRESETS[key].map(function(p,i){ return {name:NAMES[i], T:p[0], n:p[1]}; }); }
+  load("base");
+
+  var fmt1 = function(x){ return x.toLocaleString("ru-RU",{maximumFractionDigits:1, minimumFractionDigits: (Math.round(x)===x?0:1)}); };
+  var fmt0 = function(x){ return Math.round(x).toLocaleString("ru-RU"); };
+  function dayWord(n){ n=Math.abs(Math.round(n)); var a=n%100, b=n%10; if(a>10&&a<20) return "суток"; if(b===1) return "сутки"; return "суток"; }
+  function failWord(n){ var a=n%100,b=n%10; if(a>10&&a<20) return "отказов"; if(b===1) return "отказ"; if(b>=2&&b<=4) return "отказа"; return "отказов"; }
+
+  var box = document.getElementById("wells");
+  function buildInputs(){
+    box.innerHTML = "";
+    wells.forEach(function(w,i){
+      var row = document.createElement("div");
+      row.className = "well";
+      row.innerHTML =
+        '<div class="wname">'+w.name+'</div>'+
+        '<div class="field"><label class="flabel" for="r'+i+'">Отработано за год, сут</label>'+
+          '<div class="range-row"><input type="range" id="r'+i+'" min="0" max="365" step="1" value="'+w.T+'">'+
+          '<input class="days" type="number" id="d'+i+'" min="0" max="365" value="'+w.T+'" aria-label="Отработано суток, '+w.name+'"></div></div>'+
+        '<div class="field" style="grid-column:auto;grid-row:auto"><span class="flabel">Отказов</span>'+
+          '<div class="stepper"><button type="button" id="m'+i+'" aria-label="Меньше отказов, '+w.name+'">−</button>'+
+          '<output id="n'+i+'">'+w.n+'</output>'+
+          '<button type="button" id="p'+i+'" aria-label="Больше отказов, '+w.name+'">+</button></div></div>';
+      box.appendChild(row);
+      var r = row.querySelector("#r"+i), d = row.querySelector("#d"+i);
+      r.addEventListener("input", function(){ w.T = +r.value; d.value = w.T; clearPreset(); render(); });
+      d.addEventListener("input", function(){ var v = Math.max(0, Math.min(PERIOD, parseInt(d.value||"0",10)||0)); w.T=v; r.value=v; clearPreset(); render(); });
+      d.addEventListener("blur", function(){ d.value = w.T; });
+      var out = row.querySelector("#n"+i);
+      row.querySelector("#m"+i).addEventListener("click", function(){ if(w.n>0){ w.n--; out.value = w.n; out.textContent = w.n; clearPreset(); render(); } });
+      row.querySelector("#p"+i).addEventListener("click", function(){ if(w.n<12){ w.n++; out.value = w.n; out.textContent = w.n; clearPreset(); render(); } });
+    });
+  }
+  function clearPreset(){ document.querySelectorAll("[data-preset]").forEach(function(b){ b.setAttribute("aria-pressed","false"); }); }
+  document.querySelectorAll("[data-preset]").forEach(function(b){
+    b.addEventListener("click", function(){
+      load(b.dataset.preset); buildInputs(); clearPreset(); b.setAttribute("aria-pressed","true"); render();
+    });
+  });
+
+  function compute(){
+    var sumT=0, sumN=0, sumTf=0;
+    wells.forEach(function(w){ sumT+=w.T; sumN+=w.n; if(w.n>0) sumTf+=w.T; });
+    return { sumT:sumT, sumN:sumN, sumTf:sumTf, mrp: sumN>0 ? sumT/sumN : Infinity, sno: sumN>0 ? sumTf/sumN : NaN };
+  }
+
+  var SVGNS="http://www.w3.org/2000/svg";
+  function el(tag, attrs, text){ var e=document.createElementNS(SVGNS,tag); for(var k in attrs) e.setAttribute(k, attrs[k]); if(text!=null) e.textContent=text; return e; }
+
+  function renderTimeline(){
+    var svg = document.getElementById("timeline"); svg.innerHTML="";
+    var x0=110, x1=985, W=x1-x0, top=34, rowH=36, barH=18;
+    var sx = function(d){ return x0 + d/PERIOD*W; };
+    var months=["окт","ноя","дек","янв","фев","мар","апр","май","июн","июл","авг","сен"];
+    for(var m=0;m<=12;m++){
+      var x=sx(m*PERIOD/12);
+      svg.appendChild(el("line",{x1:x,y1:22,x2:x,y2:top+rowH*5,"class":"ax"}));
+      if(m<12) svg.appendChild(el("text",{x:sx((m+0.5)*PERIOD/12),y:16,"text-anchor":"middle","class":"ax-t"},months[m]));
+    }
+    wells.forEach(function(w,i){
+      var y = top + i*rowH + (rowH-barH)/2;
+      svg.appendChild(el("text",{x:0,y:y+barH-4,"class":"val-t"},w.name));
+      var segs=[];
+      if(w.n===0){ segs.push(["run",w.T]); if(PERIOD-w.T>0) segs.push(["idle",PERIOD-w.T]); }
+      else {
+        var run=w.T/(w.n+1), rep=(PERIOD-w.T)/w.n;
+        segs.push(["run",run]);
+        for(var k=0;k<w.n;k++){ segs.push(["fail",0]); segs.push(["rep",rep]); segs.push(["run",run]); }
+      }
+      var cur=0;
+      segs.forEach(function(s){
+        if(s[0]==="fail"){
+          var fx=sx(cur);
+          svg.appendChild(el("rect",{x:fx-1.5,y:y-5,width:3,height:barH+10,"class":"fail-mark"}));
+          return;
+        }
+        if(s[1]<=0) return;
+        svg.appendChild(el("rect",{x:sx(cur),y:y,width:Math.max(0,s[1]/PERIOD*W),height:barH,"class":s[0]==="run"?"seg-run":(s[0]==="rep"?"seg-rep":"seg-idle")}));
+        cur+=s[1];
+      });
+    });
+    svg.appendChild(el("text",{x:x1,y:top+rowH*5+18,"text-anchor":"end","class":"ax-t"},"скользящий год: окт 2025 — сен 2026, 365 суток"));
+  }
+
+  function renderBars(c){
+    var svg=document.getElementById("bars"); svg.innerHTML="";
+    var L=64, R=900, T=26, B=280, H=B-T;
+    var defs=el("defs",{});
+    var pat=el("pattern",{id:"hatch",width:8,height:8,patternUnits:"userSpaceOnUse",patternTransform:"rotate(45)"});
+    pat.appendChild(el("rect",{width:8,height:8,style:"fill:var(--surface)"}));
+    pat.appendChild(el("rect",{width:3.5,height:8,"class":"bar"}));
+    defs.appendChild(pat); svg.appendChild(defs);
+    var vals=wells.map(function(w){ return w.n>0 ? w.T/w.n : w.T; });
+    var maxV=Math.max.apply(null, vals.concat([isFinite(c.mrp)?c.mrp:0, 100]));
+    var step = maxV>800 ? 200 : 100;
+    var top = Math.ceil(maxV*1.08/step)*step;
+    var sy=function(v){ return B - v/top*H; };
+    for(var t=0;t<=top;t+=step){
+      svg.appendChild(el("line",{x1:L,y1:sy(t),x2:R,y2:sy(t),"class":"ax"}));
+      svg.appendChild(el("text",{x:L-10,y:sy(t)+4,"text-anchor":"end","class":"ax-t"},fmt0(t)));
+    }
+    svg.appendChild(el("text",{x:L-10,y:12,"text-anchor":"end","class":"ax-t"},"сут"));
+    var slot=(R-L)/5, bw=Math.min(90,slot*0.55);
+    var lines=[]; if(isFinite(c.mrp)) lines.push(sy(c.mrp)); if(!isNaN(c.sno)) lines.push(sy(c.sno));
+    wells.forEach(function(w,i){
+      var cx=L+slot*(i+0.5), v=vals[i], y=sy(v);
+      var r=el("rect",{x:cx-bw/2,y:y,width:bw,height:Math.max(0,B-y),rx:4});
+      if(w.n>0) r.setAttribute("class","bar"); else { r.setAttribute("fill","url(#hatch)"); r.setAttribute("style","stroke:var(--run);stroke-width:1.5"); }
+      svg.appendChild(r);
+      var ly=y-8, cls="val-t", clash=function(yy){ return lines.some(function(l){ return Math.abs(yy-4-l)<11; }); };
+      if(clash(ly)){
+        if(B-y>30 && !clash(y+20)){ ly=y+20; cls="val-t val-in"; }
+        else { ly=Math.min.apply(null,lines.concat([y]))-10; }
+      }
+      svg.appendChild(el("text",{x:cx,y:ly,"text-anchor":"middle","class":cls},fmt0(v)));
+      svg.appendChild(el("text",{x:cx,y:B+20,"text-anchor":"middle","class":"ax-t"},w.name));
+      svg.appendChild(el("text",{x:cx,y:B+38,"text-anchor":"middle","class":"ax-t"},w.n>0 ? (w.n+" "+failWord(w.n)) : "без отказов"));
+    });
+    var yM = isFinite(c.mrp) ? sy(c.mrp) : null, yS = isNaN(c.sno) ? null : sy(c.sno);
+    if(yM!==null){
+      svg.appendChild(el("line",{x1:L,y1:yM,x2:R,y2:yM,"class":"line-mrp"}));
+    }
+    if(yS!==null){
+      svg.appendChild(el("line",{x1:L,y1:yS,x2:R,y2:yS,"class":"line-sno"}));
+    }
+    var lm=yM, ls=yS;
+    if(lm!==null && ls!==null && Math.abs(lm-ls)<18){ var mid=(lm+ls)/2; lm=mid-9; ls=mid+9; if(yM>yS){ lm=mid+9; ls=mid-9; } }
+    if(lm!==null) svg.appendChild(el("text",{x:R+8,y:lm+4,"class":"lab-mrp"},"МРП "+fmt0(c.mrp)));
+    if(ls!==null) svg.appendChild(el("text",{x:R+8,y:ls+4,"class":"lab-sno"},"СНО "+fmt0(c.sno)));
+    if(yM===null) svg.appendChild(el("text",{x:R,y:T,"text-anchor":"end","class":"lab-mrp"},"отказов нет: МРП > 365"));
+  }
+
+  function renderTable(c){
+    var body=document.getElementById("stepBody"), foot=document.getElementById("stepFoot");
+    body.innerHTML = wells.map(function(w){
+      return "<tr><td class='mono'>"+w.name+"</td><td class='num'>"+w.T+"</td><td class='num'>"+w.n+"</td><td class='num'>"+(w.n>0?fmt1(w.T/w.n):"—")+"</td>"+
+        "<td class='yes'>да</td><td class='"+(w.n>0?"yes":"no")+"'>"+(w.n>0?"да":"нет, без отказов")+"</td></tr>";
+    }).join("");
+    foot.innerHTML = "<tr><td>Итого</td><td class='num'>"+c.sumT+"</td><td class='num'>"+c.sumN+"</td><td class='num'>—</td><td>Σ "+c.sumT+" сут</td><td>Σ "+c.sumTf+" сут</td></tr>";
+  }
+
+  function render(){
+    wells.forEach(function(w,i){ var o=document.getElementById("n"+i); if(o) o.textContent=w.n; });
+    var c=compute();
+    var mrpEl=document.getElementById("mrpV");
+    if(isFinite(c.mrp)) mrpEl.innerHTML = fmt1(c.mrp)+' <small>'+dayWord(c.mrp)+'</small>';
+    else mrpEl.innerHTML = '&gt; 365 <small>суток</small>';
+    document.getElementById("snoV").textContent = isNaN(c.sno) ? "нет отказов" : fmt1(c.sno)+" сут";
+    document.getElementById("totV").textContent = c.sumN+" / "+c.sumT;
+
+    var plain;
+    if(!isFinite(c.mrp)) plain = "За год ни одного отказа. Делить не на что: МРП формально бесконечен, в отчётах пишут «более 365 суток».";
+    else {
+      var months = c.mrp/30.4;
+      plain = "В среднем каждая скважина группы работает около <b>"+fmt1(Math.round(months*10)/10)+" мес.</b> от ремонта до ремонта. "+
+        (c.mrp>=PERIOD ? "Это больше года: в среднем на скважину приходится меньше одного ремонта в год." : "Это меньше года: в среднем на скважину больше одного ремонта в год.");
+    }
+    document.getElementById("plainV").innerHTML = plain;
+
+    var tList = wells.map(function(w){return w.T;}).join(" + ");
+    var nList = wells.map(function(w){return w.n;}).join(" + ");
+    var fw = wells.filter(function(w){return w.n>0;});
+    var work = "<div class='blk'><div class='h'>А. МРП, все скважины</div>"+
+      "<div class='row'>ΣТ = "+tList+" = "+c.sumT+"</div>"+
+      "<div class='row'>ΣN = "+nList+" = "+c.sumN+"</div>"+
+      "<div class='row'>МРП = "+c.sumT+" / "+c.sumN+" = <b style='color:var(--oil)'>"+(isFinite(c.mrp)?fmt1(c.mrp):"∞")+"</b></div></div>";
+    if(fw.length){
+      work += "<div class='blk'><div class='h'>Б. СНО, только отказавшие</div>"+
+        "<div class='row'>ΣТ = "+fw.map(function(w){return w.T;}).join(" + ")+" = "+c.sumTf+"</div>"+
+        "<div class='row'>СНО = "+c.sumTf+" / "+c.sumN+" = <b style='color:var(--warm)'>"+fmt1(c.sno)+"</b></div></div>";
+    } else work += "<div class='blk'><div class='h'>Б. СНО</div><div class='row'>отказавших установок нет</div></div>";
+    document.getElementById("workV").innerHTML = work;
+
+    var ins = document.getElementById("insightV");
+    if(c.sumN>0){
+      var worst = wells.slice().sort(function(a,b){ return b.n-a.n || (a.T/a.n)-(b.T/b.n); })[0];
+      var share = Math.round(worst.n/c.sumN*100);
+      var nT = c.sumT - worst.T + PERIOD, nN = c.sumN - worst.n;
+      var after = nN>0 ? "вырос бы с "+fmt0(c.mrp)+" до <b>"+fmt0(nT/nN)+"</b> суток" : "стал бы больше 365 суток: других отказов в группе нет";
+      ins.innerHTML = "<b>"+worst.name+"</b> даёт "+worst.n+" из "+c.sumN+" отказов ("+share+"%). Если бы она проработала год без поломок, МРП группы "+after+".";
+      ins.hidden=false;
+    } else ins.hidden=true;
+
+    document.getElementById("fleetV").textContent = isFinite(c.mrp)
+      ? "С таким МРП фонд из 1000 скважин потребовал бы около "+fmt0(1000*PERIOD/c.mrp)+" ремонтов в год."
+      : "";
+
+    renderTimeline(); renderBars(c); renderTable(c);
+  }
+
+  buildInputs(); render();
+})();
+</script>
